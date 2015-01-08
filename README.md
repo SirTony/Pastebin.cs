@@ -3,6 +3,22 @@ Pastebin.cs
 
 A C# wrapper around the Pastebin API. Requires .NET 4.0.
 
+Installing
+----------
+
+To install Pastebin.cs, run the following command in the [Package Manager Console](http://docs.nuget.org/docs/start-here/using-the-package-manager-console)
+
+    PM> Install-Package Pastebin-Api
+
+You can also head over the [releases](https://github.com/SirTony/Pastebin.cs/releases) page to grab any one of the version tags and pre-compiled binaries.
+
+Documentation
+-------------
+
+An MSDN-style library reference can be found at http://sirtony.github.io/Pastebin.cs
+
+Source code samples can be found at https://github.com/SirTony/Pastebin.cs/tree/master/Samples
+
 License
 -------
 
