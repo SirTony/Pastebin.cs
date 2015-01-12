@@ -49,12 +49,14 @@ namespace Pastebin
             var query = String.Join( "&", pairs );
             var request = WebRequest.Create( url );
             request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.ContentLength = Encoding.UTF8.GetByteCount( query );
 
             using( var stream = request.GetRequestStream() )
-            using( var writer = new StreamWriter( stream, Encoding.UTF8 ) )
             {
-                writer.Write( query );
-                writer.Flush();
+                var buffer = Encoding.UTF8.GetBytes( query );
+                stream.Write( buffer, 0, buffer.Length );
+                stream.Flush();
             }
 
             var response = request.GetResponse();
@@ -67,7 +69,7 @@ namespace Pastebin
             }
 
             if( text.StartsWith( "Bad API request," ) )
-                throw new PastebinException( text.Substring( text.IndexOf( ',' ) + 1 ) );
+                throw new PastebinException( text.Substring( text.IndexOf( ',' ) + 2 ) );
 
             return text;
         }

@@ -10,6 +10,11 @@ namespace Pastebin
             return element.Element( name ).Value;
         }
 
+        public static bool HasValueFor( this XElement element, string name )
+        {
+            return element.Element( name ) != null;
+        }
+
         public static T Get<T, U>( this XElement element, string name, Func<string, U> extractor )
         {
             var text = element.Get( name );

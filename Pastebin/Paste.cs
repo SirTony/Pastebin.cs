@@ -109,8 +109,8 @@ namespace Pastebin
             this.size = paste.Get( "paste_size", Int32.Parse );
             this.expireTimestamp = paste.Get( "paste_expire_date", Int32.Parse );
             this.exposure = paste.Get<PasteExposure, int>( "paste_private", Int32.Parse );
-            this.formatName = paste.Get( "paste_format_long" );
-            this.formatId = paste.Get( "paste_format_short" );
+            this.formatName = paste.HasValueFor( "paste_format_long" ) ? paste.Get( "paste_format_long" ) : null;
+            this.formatId = paste.HasValueFor( "paste_format_short" ) ? paste.Get( "paste_format_short" ) : null;
             this.url = paste.Get( "paste_url" );
             this.views = paste.Get( "paste_hits", Int32.Parse );
         }

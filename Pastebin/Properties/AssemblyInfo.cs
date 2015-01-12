@@ -4,14 +4,14 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitleAttribute("Pastebin")]
 [assembly: AssemblyDescriptionAttribute("A C# wrapper around the Pastebin API.")]
-[assembly: AssemblyConfigurationAttribute("Release")]
+[assembly: AssemblyConfigurationAttribute("Debug")]
 [assembly: AssemblyCompanyAttribute("Tony Montana")]
 [assembly: AssemblyProductAttribute("Pastebin.cs")]
 [assembly: AssemblyCopyrightAttribute("Copyright © Tony Montana 2015")]
 [assembly: AssemblyTrademarkAttribute("")]
 [assembly: AssemblyCultureAttribute("")]
 [assembly: GuidAttribute("32AA516A-0206-4BFE-97F3-73522408E1E4")]
-[assembly: AssemblyFileVersionAttribute("1.0.1.5")]
+[assembly: AssemblyFileVersionAttribute("1.0.1.6")]
 [assembly: AssemblyVersionAttribute("1.0")]
 [assembly: AssemblyInformationalVersionAttribute("1.0")]
 namespace System {
