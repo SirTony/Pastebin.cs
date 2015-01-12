@@ -31,10 +31,10 @@ namespace Pastebin
                 { "api_user_password", password },
             };
 
-            this.userKey = this.Request( parameters, LoginUrl );
+            this.userKey = this.Post( parameters, LoginUrl );
         }
 
-        public string Request( Dictionary<string, object> parameters, string url )
+        public string Post( Dictionary<string, object> parameters, string url )
         {
             if( parameters == null )
                 parameters = new Dictionary<string, object>();
@@ -48,6 +48,7 @@ namespace Pastebin
 
             var query = String.Join( "&", pairs );
             var request = WebRequest.Create( url );
+            request.Method = "POST";
 
             using( var stream = request.GetRequestStream() )
             using( var writer = new StreamWriter( stream, Encoding.UTF8 ) )
@@ -71,7 +72,7 @@ namespace Pastebin
             return text;
         }
 
-        public string Request( string option, Dictionary<string, object> parameters = null, bool authenticated = false )
+        public string Post( string option, Dictionary<string, object> parameters = null, bool authenticated = false )
         {
             if( parameters == null )
                 parameters = new Dictionary<string, object>();
@@ -84,12 +85,12 @@ namespace Pastebin
             if( authenticated )
                 parameters.Add( "api_user_key", this.userKey );
 
-            return this.Request( parameters, ApiUrl );
+            return this.Post( parameters, ApiUrl );
         }
 
-        public XDocument RequestXml( string option, Dictionary<string, object> parameters = null, bool authenticated = false )
+        public XDocument PostXml( string option, Dictionary<string, object> parameters = null, bool authenticated = false )
         {
-            var xml = this.Request( option, parameters, authenticated );
+            var xml = this.Post( option, parameters, authenticated );
             return XDocument.Parse( String.Format( "<?xml version='1.0' encoding='utf-8'?><result>{0}</result>", xml ) );
         }
     }

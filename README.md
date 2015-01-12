@@ -12,6 +12,16 @@ To install Pastebin.cs, run the following command in the [Package Manager Consol
 
 You can also head over the [releases](https://github.com/SirTony/Pastebin.cs/releases) page to grab any one of the version tags and pre-compiled binaries.
 
+### Building From Source
+
+If you would like to build the library yourself simply checkout the repository with the following command:
+
+    $ git clone https://github.com/SirTony/Pastebin.cs.git ./Pastebin
+
+Then open `Pastebin.sln` in Visual Studio.
+
+* **Note**: You will need F# installed in order to run the pre-build event that automatically updates the `AssemblyInfo.cs` file.
+
 Documentation
 -------------
 

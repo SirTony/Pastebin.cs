@@ -114,7 +114,7 @@ namespace Pastebin
                 { "api_results_limit", limit },
             };
 
-            var pastes = this.agent.RequestXml( ListOption, parameters, true ).Element( "result" ).Elements( "paste" );
+            var pastes = this.agent.PostXml( ListOption, parameters, true ).Element( "result" ).Elements( "paste" );
             return pastes.Select( x => new Paste( this.agent, x ) ).ToList().AsReadOnly();
         }
     }

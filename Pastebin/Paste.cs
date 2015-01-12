@@ -88,11 +88,11 @@ namespace Pastebin
         {
             get
             {
-                if( text == null )
+                if( this.text == null )
                 {
                     using( var client = new WebClient() )
                     {
-                        text = client.DownloadString( String.Format( RawUrl, this.key ) );
+                        this.text = client.DownloadString( String.Format( RawUrl, this.key ) );
                     }
                 }
 
@@ -127,7 +127,7 @@ namespace Pastebin
                 { "api_paste_key", this.key },
             };
 
-            this.agent.Request( DeleteOption, parameters, true );
+            this.agent.Post( DeleteOption, parameters, true );
         }
     }
 }
