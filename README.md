@@ -12,7 +12,7 @@ To install Pastebin.cs, run the following command in the [Package Manager Consol
 
 You can also head over the [releases](https://github.com/SirTony/Pastebin.cs/releases) page to grab any one of the version tags and pre-compiled binaries.
 
-### Building From Source
+##### Building From Source
 
 If you would like to build the library yourself simply checkout the repository with the following command:
 
