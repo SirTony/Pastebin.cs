@@ -6,6 +6,9 @@ using System.Text;
 using System.Web;
 using System.Xml.Linq;
 
+/// <summary>
+/// The root namespace for all Pastebin API components.
+/// </summary>
 namespace Pastebin
 {
     internal sealed class WebAgent

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Xml.Linq;
 
+/// <summary>
+/// The root namespace for all Pastebin API components.
+/// </summary>
 namespace Pastebin
 {
     internal static class XElementExtensions

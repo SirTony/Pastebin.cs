@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Xml.Linq;
 
+/// <summary>
+/// The root namespace for all Pastebin API components.
+/// </summary>
 namespace Pastebin
 {
     /// <summary>
@@ -119,7 +122,7 @@ namespace Pastebin
         /// Deletes the current paste. Only available if the paste belongs to the currently logged in user.
         /// </summary>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
-        /// <exception cref="Pastebin.PastebinException">Thrown when a bad API request is made.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
         public void Delete()
         {
             var parameters = new Dictionary<string, object>

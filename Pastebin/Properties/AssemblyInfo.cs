@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademarkAttribute("")]
 [assembly: AssemblyCultureAttribute("")]
 [assembly: GuidAttribute("32AA516A-0206-4BFE-97F3-73522408E1E4")]
-[assembly: AssemblyFileVersionAttribute("1.0.3.7")]
+[assembly: AssemblyFileVersionAttribute("1.0.3.8")]
 [assembly: AssemblyVersionAttribute("1.0")]
 [assembly: AssemblyInformationalVersionAttribute("1.0")]
 namespace System {

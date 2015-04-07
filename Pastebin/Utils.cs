@@ -1,5 +1,8 @@
 ﻿using System;
 
+/// <summary>
+/// The root namespace for all Pastebin API components.
+/// </summary>
 namespace Pastebin
 {
     internal static class Utils

@@ -4,6 +4,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Linq;
 
+/// <summary>
+/// The root namespace for all Pastebin API components.
+/// </summary>
 namespace Pastebin
 {
     /// <summary>
@@ -89,11 +92,13 @@ namespace Pastebin
         /// <param name="title">The title of the paste as it will appear on the page.</param>
         /// <param name="languageId">The the language ID of the paste's content. A full list of language IDs can be found at http://pastebin.com/api#5 </param>
         /// <param name="code">The contents of the paste.</param>
-        /// <returns>The newly created paste on success.</returns>
+        /// <param name="exposure">The visibility of the paste (private, public, or unlisted).</param>
+        /// <param name="expiration">The duration of time the paste will be available before expiring.</param>
+        /// <returns>The URL for the newly created paste.</returns>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
         /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="code"/> is null.</exception>
-        /// <exception cref="Pastebin.PastebinException">Thrown when a bad API request is made.</exception>
-        public Paste CreatePaste( string title, string languageId, string code, PasteExposure exposure = PasteExposure.Public, PasteExpiration expiration = PasteExpiration.Never )
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public string CreatePaste( string title, string languageId, string code, PasteExposure exposure = PasteExposure.Public, PasteExpiration expiration = PasteExpiration.Never )
         {
             return Pastebin.CreatePasteImpl( this.agent, true, title, languageId, code, exposure, expiration );
         }
@@ -102,8 +107,9 @@ namespace Pastebin
         /// Lists all the pastes for the current user.
         /// </summary>
         /// <param name="limit">Optional paste limit. Minimum value = 1. Maximum value = 1000.</param>
+        /// <returns>A read-only collection containing the user's pastes.</returns>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
-        /// <exception cref="Pastebin.PastebinException">Thrown when a bad API request is made.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
         public ReadOnlyCollection<Paste> GetPastes( int limit = 50 )
         {
             if( limit < 1 || limit > 1000 )

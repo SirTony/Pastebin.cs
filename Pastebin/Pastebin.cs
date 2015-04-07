@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
+/// <summary>
+/// The root namespace for all Pastebin API components.
+/// </summary>
 namespace Pastebin
 {
     /// <summary>
@@ -25,7 +28,7 @@ namespace Pastebin
         /// Returns a collection of the current trending pastes.
         /// </summary>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
-        /// <exception cref="Pastebin.PastebinException">Thrown when a bad API request is made.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
         public ReadOnlyCollection<Paste> TrendingPastes
         {
             get
@@ -43,9 +46,9 @@ namespace Pastebin
         /// <summary>
         /// The currently logged in user.
         /// </summary>
-        /// <exception cref="Pastebin.PastebinException">Thrown when the user is not logged in.</exception>
+        /// <exception cref="PastebinException">Thrown when the user is not logged in.</exception>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
-        /// <exception cref="Pastebin.PastebinException">Thrown when a bad API request is made.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
         public User User
         {
             get
@@ -78,9 +81,12 @@ namespace Pastebin
         /// <summary>
         /// Logs in to Pastebin and returns a <see cref="Pastebin.User"/> instance representing the logged in user.
         /// </summary>
+        /// <param name="username">Ther username of the account to authenticate as.</param>
+        /// <param name="password">The password for the account to authenticate as.</param>
+        /// <returns>An object representing the newly authenticated user.</returns>
         /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="username"/> or <paramref name="password"/> is null.</exception>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
-        /// <exception cref="Pastebin.PastebinException">Thrown when a bad API request is made.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
         public User LogIn( string username, string password )
         {
             if( username == null )
@@ -102,16 +108,18 @@ namespace Pastebin
         /// <param name="title">The title of the paste as it will appear on the page.</param>
         /// <param name="languageId">The the language ID of the paste's content. A full list of language IDs can be found at http://pastebin.com/api#5 </param>
         /// <param name="code">The contents of the paste.</param>
-        /// <returns>The newly created paste on success.</returns>
+        /// <param name="exposure">The visibility of the paste (private, public, or unlisted).</param>
+        /// <param name="expiration">The duration of time the paste will be available before expiring.</param>
+        /// <returns>The URL for the newly created paste.</returns>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
         /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="code"/> is null.</exception>
-        /// <exception cref="Pastebin.PastebinException">Thrown when a bad API request is made.</exception>
-        public Paste CreatePaste( string title, string languageId, string code, PasteExposure exposure = PasteExposure.Public, PasteExpiration expiration = PasteExpiration.Never )
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public string CreatePaste( string title, string languageId, string code, PasteExposure exposure = PasteExposure.Public, PasteExpiration expiration = PasteExpiration.Never )
         {
             return Pastebin.CreatePasteImpl( this.agent, false, title, languageId, code, exposure, expiration );
         }
 
-        internal static Paste CreatePasteImpl( WebAgent agent, bool authenticated, string title, string languageId, string code, PasteExposure exposure, PasteExpiration expiration )
+        internal static string CreatePasteImpl( WebAgent agent, bool authenticated, string title, string languageId, string code, PasteExposure exposure, PasteExpiration expiration )
         {
             if( code == null )
                 throw new ArgumentNullException( "code" );
@@ -166,8 +174,7 @@ namespace Pastebin
                 { "api_paste_expire_date", expirationString },
             };
 
-            var root = agent.PostXml( PasteOption, parameters, authenticated ).Element( "result" );
-            return new Paste( agent, root.Element( "paste" ) );
+            return agent.Post( PasteOption, parameters, authenticated );
         }
     }
 }

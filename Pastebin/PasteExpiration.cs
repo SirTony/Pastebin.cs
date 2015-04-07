@@ -1,4 +1,7 @@
-﻿namespace Pastebin
+﻿/// <summary>
+/// The root namespace for all Pastebin API components.
+/// </summary>
+namespace Pastebin
 {
     /// <summary>
     /// An enumeration defining paste expiration times.
