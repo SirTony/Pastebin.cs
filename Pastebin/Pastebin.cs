@@ -70,12 +70,13 @@ namespace Pastebin
         /// Initializes a new instance of <see cref="Pastebin.Pastebin"/> with the specified API key.
         /// </summary>
         /// <param name="apiKey">The API key to make requests with. An API key can be obtained by logging into pastebin.com and going to http://pastebin.com/api </param>
-        public Pastebin( string apiKey )
+        /// <param name="rateLimitMode">Specifies how rate limiting should be handled See <see cref="RateLimitMode" /> for more details.</param>
+        public Pastebin( string apiKey, RateLimitMode rateLimitMode = RateLimitMode.None )
         {
             if( apiKey == null )
                 throw new ArgumentNullException( "apiKey" );
 
-            this.agent = new WebAgent( apiKey );
+            this.agent = new WebAgent( apiKey, rateLimitMode );
         }
 
         /// <summary>

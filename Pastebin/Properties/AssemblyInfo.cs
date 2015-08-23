@@ -19,6 +19,6 @@ namespace Pastebin
     internal static class AssemblyVersion
     {
         public const string Version = "1.0";
-        public const string FileVersion = "1.0.3.10";
+        public const string FileVersion = "1.0.3.12";
     }
 }

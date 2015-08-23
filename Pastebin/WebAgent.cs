@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Web;
 using System.Xml.Linq;
 
@@ -15,15 +16,24 @@ namespace Pastebin
     {
         private const string ApiUrl = "http://pastebin.com/api/api_post.php";
         private const string LoginUrl = "http://pastebin.com/api/api_login.php";
+        private const string UserAgent = "Pastebin.cs v" + AssemblyVersion.FileVersion + " by Syke (Tony Montana)";
+        private const uint MaxRequestsPerBurst = 60;
+        private const double PaceRequestTimeout = 2000;
 
         public readonly string apiKey;
         private string userKey;
 
+        private DateTime? burstStart;
+        private DateTime? lastRequest;
+        private uint requestsThisBurst;
+        private readonly RateLimitMode rateLimitMode;
+
         public bool Authenticated { get { return this.userKey != null; } }
 
-        public WebAgent( string apiKey )
+        public WebAgent( string apiKey, RateLimitMode mode )
         {
             this.apiKey = apiKey;
+            this.rateLimitMode = mode;
         }
 
         public void Authenticate( string username, string password )
@@ -63,6 +73,8 @@ namespace Pastebin
 
         private WebRequest CreateRequest( string endPoint, string method, Dictionary<string, object> parameters )
         {
+            this.EnforceRateLimit();
+
             parameters = parameters ?? new Dictionary<string, object>();
             parameters.Add( "api_dev_key", this.apiKey );
 
@@ -84,6 +96,7 @@ namespace Pastebin
 
             var request = WebRequest.Create( endPoint );
             request.Method = method;
+            request.Headers.Add( HttpRequestHeader.UserAgent, UserAgent );
 
             if( method == "POST" )
             {
@@ -133,6 +146,57 @@ namespace Pastebin
         {
             var request = this.CreateRequest( url, method, parameters );
             return this.ExecuteRequest( request );
+        }
+
+        private void EnforceRateLimit()
+        {
+            if( this.rateLimitMode != RateLimitMode.Disabled && this.burstStart == null && this.lastRequest == null )
+            {
+                this.lastRequest = DateTime.UtcNow;
+                this.burstStart = DateTime.UtcNow;
+                return;
+            }
+
+            switch( this.rateLimitMode )
+            {
+                case RateLimitMode.Disabled:
+                    return;
+
+                case RateLimitMode.None:
+                case RateLimitMode.Burst:
+                    {
+                        var diff = DateTime.UtcNow - this.burstStart.Value;
+                        if( diff.TotalSeconds >= 60 )
+                        {
+                            this.burstStart = DateTime.UtcNow;
+                            this.requestsThisBurst = 0;
+                            return;
+                        }
+
+                        if( requestsThisBurst >= MaxRequestsPerBurst )
+                        {
+                            var timeLeft = DateTime.UtcNow - this.burstStart.Value;
+
+                            if( this.rateLimitMode == RateLimitMode.Burst )
+                                Thread.Sleep( (int)timeLeft.TotalMilliseconds );
+                            
+                            throw new PastebinRateLimitException( (int)timeLeft.TotalSeconds );
+                        }
+
+                        ++this.requestsThisBurst;
+                        break;
+                    }
+
+                case RateLimitMode.Pace:
+                    {
+                        var diff = DateTime.UtcNow - this.lastRequest.Value;
+                        if( diff.TotalMilliseconds < PaceRequestTimeout )
+                            Thread.Sleep( (int)( PaceRequestTimeout - diff.TotalMilliseconds ) );
+
+                        this.lastRequest = DateTime.UtcNow;
+                        break;
+                    }
+            }
         }
     }
 }
