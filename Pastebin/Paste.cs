@@ -13,7 +13,7 @@ namespace Pastebin
     /// </summary>
     public sealed class Paste
     {
-        private const string RawUrl = "http://pastebin.com/raw.php?i={0}";
+        private const string RawUrl = "http://pastebin.com/raw.php";
         private const string DeleteOption = "delete";
 
         private readonly WebAgent agent;
@@ -93,10 +93,12 @@ namespace Pastebin
             {
                 if( this.text == null )
                 {
-                    using( var client = new WebClient() )
+                    var parameters = new Dictionary<string, object>
                     {
-                        this.text = client.DownloadString( String.Format( RawUrl, this.key ) );
-                    }
+                        { "i", this.key },
+                    };
+
+                    this.text = this.agent.Get( RawUrl, parameters );
                 }
 
                 return this.text;
@@ -130,7 +132,7 @@ namespace Pastebin
                 { "api_paste_key", this.key },
             };
 
-            this.agent.Post( DeleteOption, parameters, true );
+            this.agent.Post( DeleteOption, parameters );
         }
     }
 }

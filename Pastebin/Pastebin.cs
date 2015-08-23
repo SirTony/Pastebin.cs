@@ -33,7 +33,7 @@ namespace Pastebin
         {
             get
             {
-                var pastes = this.agent.PostXml( TrendingOption ).Element( "result" ).Elements( "paste" );
+                var pastes = this.agent.PostAndReturnXml( TrendingOption ).Element( "result" ).Elements( "paste" );
                 var list = new List<Paste>();
 
                 foreach( var element in pastes )
@@ -58,7 +58,7 @@ namespace Pastebin
 
                 if( this.user == null )
                 {
-                    var document = this.agent.PostXml( UserOption, authenticated: true );
+                    var document = this.agent.PostAndReturnXml( UserOption );
                     this.user = new User( this.agent, document.Element( "result" ).Element( "user" ) );
                 }
 
@@ -174,7 +174,7 @@ namespace Pastebin
                 { "api_paste_expire_date", expirationString },
             };
 
-            return agent.Post( PasteOption, parameters, authenticated );
+            return agent.Post( PasteOption, parameters );
         }
     }
 }
