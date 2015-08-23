@@ -106,16 +106,16 @@ namespace Pastebin
         internal Paste( WebAgent agent, XElement paste )
         {
             this.agent = agent;
-            this.key = paste.Get( "paste_key" );
-            this.timestamp = paste.Get( "paste_date", Int32.Parse );
-            this.title = paste.Get( "paste_title" );
-            this.size = paste.Get( "paste_size", Int32.Parse );
-            this.expireTimestamp = paste.Get( "paste_expire_date", Int32.Parse );
-            this.exposure = paste.Get<PasteExposure, int>( "paste_private", Int32.Parse );
-            this.formatName = paste.HasValueFor( "paste_format_long" ) ? paste.Get( "paste_format_long" ) : null;
-            this.formatId = paste.HasValueFor( "paste_format_short" ) ? paste.Get( "paste_format_short" ) : null;
-            this.url = paste.Get( "paste_url" );
-            this.views = paste.Get( "paste_hits", Int32.Parse );
+            this.key = paste.Value( "paste_key" );
+            this.timestamp = paste.Value( "paste_date", Int32.Parse );
+            this.title = paste.Value( "paste_title" );
+            this.size = paste.Value( "paste_size", Int32.Parse );
+            this.expireTimestamp = paste.Value( "paste_expire_date", Int32.Parse );
+            this.exposure = (PasteExposure)paste.Value( "paste_private", Int32.Parse );
+            this.formatName = paste.ValueOrDefault( "paste_format_long" );
+            this.formatId = paste.ValueOrDefault( "paste_format_short" );
+            this.url = paste.Value( "paste_url" );
+            this.views = paste.Value( "paste_hits", Int32.Parse );
         }
 
         /// <summary>

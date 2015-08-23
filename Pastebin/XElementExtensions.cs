@@ -8,27 +8,22 @@ namespace Pastebin
 {
     internal static class XElementExtensions
     {
-        public static string Get( this XElement element, string name )
+        public static string Value( this XElement element, string name )
         {
             return element.Element( name ).Value;
         }
 
-        public static bool HasValueFor( this XElement element, string name )
+        public static string ValueOrDefault( this XElement element, string name )
         {
-            return element.Element( name ) != null;
+            if( element.Element( name ) == null )
+                return default( string );
+
+            return element.Element( name ).Value;
         }
 
-        public static T Get<T, U>( this XElement element, string name, Func<string, U> extractor )
+        public static T Value<T>( this XElement element, string name, Func<string, T> extractor )
         {
-            var text = element.Get( name );
-            var value = (object)extractor( text );
-
-            return (T)value;
-        }
-
-        public static T Get<T>( this XElement element, string name, Func<string, T> extractor )
-        {
-            var text = element.Get( name );
+            var text = element.Value( name );
             return extractor( text );
         }
     }

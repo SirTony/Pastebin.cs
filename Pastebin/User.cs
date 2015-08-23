@@ -75,15 +75,15 @@ namespace Pastebin
         internal User( WebAgent agent, XElement user )
         {
             this.agent = agent;
-            this.username = user.Get( "user_name" );
-            this.defaultFormat = user.Get( "user_format_short" );
-            this.defaultExpiration = user.Get( "user_expiration" );
-            this.avatarUrl = user.Get( "user_avatar_url" );
-            this.website = user.Get( "user_website" );
-            this.email = user.Get( "user_email" );
-            this.location = user.Get( "user_location" );
-            this.defaultExposure = user.Get<PasteExposure, int>( "user_private", Int32.Parse );
-            this.accountType = user.Get<AccountType, int>( "user_account_type", Int32.Parse );
+            this.username = user.Value( "user_name" );
+            this.defaultFormat = user.Value( "user_format_short" );
+            this.defaultExpiration = user.Value( "user_expiration" );
+            this.avatarUrl = user.Value( "user_avatar_url" );
+            this.website = user.Value( "user_website" );
+            this.email = user.Value( "user_email" );
+            this.location = user.Value( "user_location" );
+            this.defaultExposure = (PasteExposure)user.Value( "user_private", Int32.Parse );
+            this.accountType = (AccountType)user.Value( "user_account_type", Int32.Parse );
         }
 
         /// <summary>
