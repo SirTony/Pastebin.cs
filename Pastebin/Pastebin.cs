@@ -33,7 +33,7 @@ namespace Pastebin
         {
             get
             {
-                var pastes = this.agent.PostXml( TrendingOption ).Element( "result" ).Elements( "paste" );
+                var pastes = this.agent.PostAndReturnXml( TrendingOption ).Element( "result" ).Elements( "paste" );
                 var list = new List<Paste>();
 
                 foreach( var element in pastes )
@@ -58,7 +58,7 @@ namespace Pastebin
 
                 if( this.user == null )
                 {
-                    var document = this.agent.PostXml( UserOption, authenticated: true );
+                    var document = this.agent.PostAndReturnXml( UserOption );
                     this.user = new User( this.agent, document.Element( "result" ).Element( "user" ) );
                 }
 
@@ -70,12 +70,13 @@ namespace Pastebin
         /// Initializes a new instance of <see cref="Pastebin.Pastebin"/> with the specified API key.
         /// </summary>
         /// <param name="apiKey">The API key to make requests with. An API key can be obtained by logging into pastebin.com and going to http://pastebin.com/api </param>
-        public Pastebin( string apiKey )
+        /// <param name="rateLimitMode">Specifies how rate limiting should be handled See <see cref="RateLimitMode" /> for more details.</param>
+        public Pastebin( string apiKey, RateLimitMode rateLimitMode = RateLimitMode.None )
         {
             if( apiKey == null )
                 throw new ArgumentNullException( "apiKey" );
 
-            this.agent = new WebAgent( apiKey );
+            this.agent = new WebAgent( apiKey, rateLimitMode );
         }
 
         /// <summary>
@@ -174,7 +175,7 @@ namespace Pastebin
                 { "api_paste_expire_date", expirationString },
             };
 
-            return agent.Post( PasteOption, parameters, authenticated );
+            return agent.Post( PasteOption, parameters );
         }
     }
 }

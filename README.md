@@ -14,13 +14,11 @@ You can also head over the [releases](https://github.com/SirTony/Pastebin.cs/rel
 
 ##### Building From Source
 
-If you would like to build the library yourself simply checkout the repository with the following command:
+If you would like to build the library yourself simply checkout the repository with the following command (or [grab a source tarball](https://github.com/SirTony/Pastebin.cs/archive/master.zip)):
 
     $ git clone https://github.com/SirTony/Pastebin.cs.git ./Pastebin
 
-Then open `Pastebin.sln` in Visual Studio.
-
-* **Note**: You will need F# installed in order to run the pre-build event that automatically updates the `AssemblyInfo.cs` file.
+Then run MSBuild on `Pastebin.sln`, or simply open the solution in Visual Studio.
 
 Documentation
 -------------
@@ -35,7 +33,6 @@ License
 [Pastebin.cs](https://github.com/SirTony/Pastebin.cs) is licensed under the [MIT license](https://github.com/SirTony/Pastebin.cs/blob/master/LICENSE).
 
 ```
-
 The MIT License (MIT)
 
 Copyright (c) 2015 Tony Montana
