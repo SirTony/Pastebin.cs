@@ -17,7 +17,8 @@ namespace Pastebin
         private const string ApiUrl = "http://pastebin.com/api/api_post.php";
         private const string LoginUrl = "http://pastebin.com/api/api_login.php";
         private const string UserAgent = "Pastebin.cs v" + AssemblyVersion.FileVersion + " by Syke (Tony Montana)";
-        private const uint MaxRequestsPerBurst = 60;
+        private const double PeriodDuration = 60; // seconds
+        private const uint MaxRequestsPerBurst = 30;
         private const double PaceRequestTimeout = 2000;
 
         public readonly string apiKey;
@@ -96,19 +97,19 @@ namespace Pastebin
 
             var request = WebRequest.Create( endPoint );
             request.Method = method;
-            request.Headers.Add( HttpRequestHeader.UserAgent, UserAgent );
+            ( request as HttpWebRequest ).UserAgent = UserAgent;
 
             if( method == "POST" )
             {
                 var data = Encoding.UTF8.GetBytes( query );
+                request.ContentLength = data.Length;
+                request.ContentType = "application/x-www-form-urlencoded";
+
                 using( var stream = request.GetRequestStream() )
                 {
                     stream.Write( data, 0, data.Length );
                     stream.Flush();
                 }
-
-                request.ContentType = "application/x-www-form-urlencoded";
-                request.ContentLength = data.Length;
             }
 
             return request;
@@ -166,7 +167,7 @@ namespace Pastebin
                 case RateLimitMode.Burst:
                     {
                         var diff = DateTime.UtcNow - this.burstStart.Value;
-                        if( diff.TotalSeconds >= 60 )
+                        if( diff.TotalSeconds >= PeriodDuration )
                         {
                             this.burstStart = DateTime.UtcNow;
                             this.requestsThisBurst = 0;
@@ -175,12 +176,12 @@ namespace Pastebin
 
                         if( requestsThisBurst >= MaxRequestsPerBurst )
                         {
-                            var timeLeft = DateTime.UtcNow - this.burstStart.Value;
+                            var timeLeft = TimeSpan.FromSeconds( PeriodDuration ) - ( DateTime.UtcNow - this.burstStart.Value );
 
                             if( this.rateLimitMode == RateLimitMode.Burst )
-                                Thread.Sleep( (int)timeLeft.TotalMilliseconds );
-                            
-                            throw new PastebinRateLimitException( (int)timeLeft.TotalSeconds );
+                                Thread.Sleep( timeLeft );
+                            else
+                                throw new PastebinRateLimitException( timeLeft );
                         }
 
                         ++this.requestsThisBurst;
@@ -191,7 +192,7 @@ namespace Pastebin
                     {
                         var diff = DateTime.UtcNow - this.lastRequest.Value;
                         if( diff.TotalMilliseconds < PaceRequestTimeout )
-                            Thread.Sleep( (int)( PaceRequestTimeout - diff.TotalMilliseconds ) );
+                            Thread.Sleep( TimeSpan.FromMilliseconds( PaceRequestTimeout ) - diff );
 
                         this.lastRequest = DateTime.UtcNow;
                         break;

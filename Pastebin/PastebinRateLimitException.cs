@@ -7,8 +7,15 @@ namespace Pastebin
     /// </summary>
     public sealed class PastebinRateLimitException : PastebinException
     {
-        internal PastebinRateLimitException( int timeLeft )
-            : base( String.Format( "Maximum number of requests has been exceeded this period. Please wait {0} seconds", timeLeft ) )
-        { }
+        /// <summary>
+        /// The amount of time left before more requests may be made.
+        /// </summary>
+        public TimeSpan WaitTimeLeft { get; private set; }
+
+        internal PastebinRateLimitException( TimeSpan timeLeft )
+            : base( String.Format( "Maximum number of requests has been exceeded this period. Please wait {0} seconds", (int)timeLeft.TotalSeconds ) )
+        {
+            this.WaitTimeLeft = timeLeft;
+        }
     }
 }
