@@ -9,9 +9,7 @@ namespace Pastebin
     internal static class XElementExtensions
     {
         public static string Value( this XElement element, string name )
-        {
-            return element.Element( name ).Value;
-        }
+            => element.Element( name ).Value;
 
         public static string ValueOrDefault( this XElement element, string name )
         {

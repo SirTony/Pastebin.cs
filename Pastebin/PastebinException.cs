@@ -10,7 +10,12 @@ namespace Pastebin
     /// </summary>
     public class PastebinException : Exception
     {
-        internal PastebinException( string message ) : this( message, null ) { }
-        internal PastebinException( string message, Exception inner ) : base( message, inner ) { }
+        internal PastebinException( string message )
+            : this( message, null )
+        { }
+
+        internal PastebinException( string message, Exception inner )
+            : base( message, inner )
+        { }
     }
 }

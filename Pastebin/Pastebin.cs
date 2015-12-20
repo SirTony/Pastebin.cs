@@ -22,7 +22,7 @@ namespace Pastebin
         /// <summary>
         /// Gets the current API key to use in requests.
         /// </summary>
-        public string ApiKey { get { return this.agent.apiKey; } }
+        public string ApiKey => this.agent.apiKey;
 
         /// <summary>
         /// Returns a collection of the current trending pastes.
@@ -67,20 +67,20 @@ namespace Pastebin
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="Pastebin.Pastebin"/> with the specified API key.
+        /// Initializes a new instance of <see cref="Pastebin"/> with the specified API key.
         /// </summary>
-        /// <param name="apiKey">The API key to make requests with. An API key can be obtained by logging into pastebin.com and going to http://pastebin.com/api </param>
+        /// <param name="apiKey">The API key to make requests with. An API key can be obtained by logging into http://pastebin.com and going to http://pastebin.com/api </param>
         /// <param name="rateLimitMode">Specifies how rate limiting should be handled See <see cref="RateLimitMode" /> for more details.</param>
         public Pastebin( string apiKey, RateLimitMode rateLimitMode = RateLimitMode.None )
         {
             if( apiKey == null )
-                throw new ArgumentNullException( "apiKey" );
+                throw new ArgumentNullException( nameof( apiKey ) );
 
             this.agent = new WebAgent( apiKey, rateLimitMode );
         }
 
         /// <summary>
-        /// Logs in to Pastebin and returns a <see cref="Pastebin.User"/> instance representing the logged in user.
+        /// Logs in to Pastebin and returns a <see cref="global::Pastebin.User"/> instance representing the logged in user.
         /// </summary>
         /// <param name="username">Ther username of the account to authenticate as.</param>
         /// <param name="password">The password for the account to authenticate as.</param>
@@ -91,10 +91,10 @@ namespace Pastebin
         public User LogIn( string username, string password )
         {
             if( username == null )
-                throw new ArgumentNullException( "username" );
+                throw new ArgumentNullException( nameof( username ) );
 
             if( password == null )
-                throw new ArgumentNullException( "password" );
+                throw new ArgumentNullException( nameof( password ) );
 
             if( this.agent.Authenticated )
                 this.user = null;
@@ -123,7 +123,7 @@ namespace Pastebin
         internal static string CreatePasteImpl( WebAgent agent, bool authenticated, string title, string languageId, string code, PasteExposure exposure, PasteExpiration expiration )
         {
             if( code == null )
-                throw new ArgumentNullException( "code" );
+                throw new ArgumentNullException( nameof( code ) );
 
             if( title == null )
                 title = "Untitled";

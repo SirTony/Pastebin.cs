@@ -10,7 +10,7 @@ namespace Pastebin
         /// <summary>
         /// The amount of time left before more requests may be made.
         /// </summary>
-        public TimeSpan WaitTimeLeft { get; private set; }
+        public TimeSpan WaitTimeLeft { get; }
 
         internal PastebinRateLimitException( TimeSpan timeLeft )
             : base( String.Format( "Maximum number of requests has been exceeded this period. Please wait {0} seconds", (int)timeLeft.TotalSeconds ) )

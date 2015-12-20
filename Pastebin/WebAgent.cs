@@ -16,7 +16,7 @@ namespace Pastebin
     {
         private const string ApiUrl = "http://pastebin.com/api/api_post.php";
         private const string LoginUrl = "http://pastebin.com/api/api_login.php";
-        private const string UserAgent = "Pastebin.cs v" + AssemblyVersion.FileVersion + " by Syke (Tony Montana)";
+        private const string UserAgent = "Pastebin.cs v" + AssemblyVersion.InformationalVersion + " by Syke (Tony Montana)";
         private const double PeriodDuration = 60; // seconds
         private const uint MaxRequestsPerBurst = 30;
         private const double PaceRequestTimeout = 2000;
@@ -49,14 +49,10 @@ namespace Pastebin
         }
 
         public string Get( string url, Dictionary<string, object> parameters )
-        {
-            return this.CreateAndExecute( url, "GET", parameters );
-        }
+            => this.CreateAndExecute( url, "GET", parameters );
 
         public string Post( Dictionary<string, object> parameters )
-        {
-            return this.CreateAndExecute( ApiUrl, "POST", parameters );
-        }
+            => this.CreateAndExecute( ApiUrl, "POST", parameters );
 
         public string Post( string option, Dictionary<string, object> parameters )
         {

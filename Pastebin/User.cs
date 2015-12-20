@@ -30,47 +30,47 @@ namespace Pastebin
         /// <summary>
         /// The display name of the current user.
         /// </summary>
-        public string Username { get { return this.username; } }
+        public string Username => this.username;
 
         /// <summary>
         /// The default paste language for the current user.
         /// </summary>
-        public string DefaultFormat { get { return this.defaultFormat; } }
+        public string DefaultFormat => this.defaultFormat;
 
         /// <summary>
         /// The default paste expiration for the current user.
         /// </summary>
-        public string DefaultExpiration { get { return this.defaultExpiration; } }
+        public string DefaultExpiration => this.defaultExpiration;
 
         /// <summary>
         /// The URL pointing to the current user's avatar.
         /// </summary>
-        public string AvatarUrl { get { return this.avatarUrl; } }
+        public string AvatarUrl => this.avatarUrl;
 
         /// <summary>
         /// The current user's website.
         /// </summary>
-        public string Website { get { return this.website; } }
+        public string Website => this.website;
 
         /// <summary>
         /// The current user's email address.
         /// </summary>
-        public string Email { get { return this.email; } }
+        public string Email => this.email;
 
         /// <summary>
         /// The current user's location.
         /// </summary>
-        public string Location { get { return this.location; } }
+        public string Location => this.email;
 
         /// <summary>
         /// The default paste visibility for the current user.
         /// </summary>
-        public PasteExposure DefaultExposure { get { return this.defaultExposure; } }
+        public PasteExposure DefaultExposure => this.defaultExposure;
 
         /// <summary>
         /// The current user's account type.
         /// </summary>
-        public AccountType AccountType { get { return this.accountType; } }
+        public AccountType AccountType => this.accountType;
 
         internal User( WebAgent agent, XElement user )
         {
@@ -96,12 +96,10 @@ namespace Pastebin
         /// <param name="expiration">The duration of time the paste will be available before expiring.</param>
         /// <returns>The URL for the newly created paste.</returns>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
-        /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="code"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="code"/> is null.</exception>
         /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
         public string CreatePaste( string title, string languageId, string code, PasteExposure exposure = PasteExposure.Public, PasteExpiration expiration = PasteExpiration.Never )
-        {
-            return Pastebin.CreatePasteImpl( this.agent, true, title, languageId, code, exposure, expiration );
-        }
+            => Pastebin.CreatePasteImpl( this.agent, true, title, languageId, code, exposure, expiration );
 
         /// <summary>
         /// Lists all the pastes for the current user.
@@ -113,7 +111,7 @@ namespace Pastebin
         public ReadOnlyCollection<Paste> GetPastes( int limit = 50 )
         {
             if( limit < 1 || limit > 1000 )
-                throw new ArgumentOutOfRangeException( "limit", "Limit must be between 1 and 1000 (inclusive)." );
+                throw new ArgumentOutOfRangeException( nameof( limit ), "Limit must be between 1 and 1000 (inclusive)." );
 
             var parameters = new Dictionary<string, object>
             {

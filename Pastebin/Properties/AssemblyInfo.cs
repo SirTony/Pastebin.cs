@@ -12,13 +12,14 @@ using System.Runtime.InteropServices;
 [assembly: Guid( "32AA516A-0206-4BFE-97F3-73522408E1E4" )]
 [assembly: AssemblyFileVersion( Pastebin.AssemblyVersion.FileVersion )]
 [assembly: AssemblyVersion( Pastebin.AssemblyVersion.Version )]
-[assembly: AssemblyInformationalVersion( Pastebin.AssemblyVersion.FileVersion )]
+[assembly: AssemblyInformationalVersion( Pastebin.AssemblyVersion.InformationalVersion )]
 
 namespace Pastebin
 {
     internal static class AssemblyVersion
     {
-        public const string Version = "1.0";
-        public const string FileVersion = "1.0.3.12";
+        public const string Version = "2.0";
+        public const string FileVersion = "2.0.0";
+        public const string InformationalVersion = Version + "-pre";
     }
 }
