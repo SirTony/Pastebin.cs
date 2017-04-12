@@ -22,6 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\Bin\AnyCPU\Debug\Pastebin.XML</DocumentationFile>
+    <CodeAnalysisRuleSet>Pastebin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +32,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\Bin\AnyCPU\Release\Pastebin.XML</DocumentationFile>
+    <CodeAnalysisRuleSet>Pastebin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -39,7 +41,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>Pastebin.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>..\Bin\x64\Debug\Pastebin.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
@@ -49,7 +51,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>Pastebin.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>..\Bin\x64\Release\Pastebin.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -59,7 +61,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>Pastebin.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>..\Bin\x86\Debug\Pastebin.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
@@ -69,7 +71,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>Pastebin.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>..\Bin\x86\Release\Pastebin.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
@@ -85,7 +87,7 @@
   <ItemGroup>
     <Compile Include="AccountType.cs" />
     <Compile Include="Paste.cs" />
-    <Compile Include="Pastebin.cs" />
+    <Compile Include="PastebinClient.cs" />
     <Compile Include="PastebinException.cs" />
     <Compile Include="PastebinRateLimitException.cs" />
     <Compile Include="PasteExpiration.cs" />
@@ -93,8 +95,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RateLimitMode.cs" />
     <Compile Include="User.cs" />
-    <Compile Include="WebAgent.cs" />
-    <Compile Include="XElementExtensions.cs" />
+    <Compile Include="HttpWebAgent.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Pastebin.ruleset" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -1,111 +1,128 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
-/// <summary>
-/// The root namespace for all Pastebin API components.
-/// </summary>
 namespace Pastebin
 {
     /// <summary>
-    /// A class that defines an existing paste.
+    ///     A class that defines an existing paste.
     /// </summary>
     public sealed class Paste
     {
-        private const string RawUrl = "http://pastebin.com/raw/{0}";
+        private const string RawPrivateUrl = "https://pastebin.com/api/api_raw.php";
+        private const string RawPublicUrl = "https://pastebin.com/raw/{0}";
         private const string DeleteOption = "delete";
+        private const string RawOption = "show_paste";
 
-        private readonly WebAgent agent;
-        private readonly string key;
-        private readonly long timestamp;
-        private readonly string title;
-        private readonly long size;
-        private readonly long expireTimestamp;
-        private readonly PasteExposure exposure;
-        private readonly string formatName;
-        private readonly string formatId;
-        private readonly string url;
-        private readonly long views;
-        private string text;
+        private readonly HttpWebAgent _agent;
+        private readonly long _expireTimestamp;
+        private string _text;
 
         /// <summary>
-        /// The unique ID of the paste.
+        ///     The unique ID of the paste.
         /// </summary>
-        public string Id => this.key;
+        public string Id { get; }
 
         /// <summary>
-        /// An instance of <see cref="DateTime" /> representing when the paste was created in UTC.
+        ///     An instance of <see cref="DateTime" /> representing when the paste was created in UTC.
         /// </summary>
-        public DateTime Submitted => DateTimeOffset.FromUnixTimeSeconds( this.timestamp ).ToUniversalTime().DateTime;
+        public DateTime Submitted =>
+                DateTimeOffset.FromUnixTimeSeconds( this.Timestamp )
+                              .ToUniversalTime()
+                              .DateTime;
 
         /// <summary>
-        /// The raw Unix timestamp representing when the paste was created.
+        ///     The raw Unix timestamp representing when the paste was created.
         /// </summary>
-        public long Timestamp => this.timestamp;
+        public long Timestamp { get; }
 
         /// <summary>
-        /// The title of the paste as it appears on the page.
+        ///     The title of the paste as it appears on the page.
         /// </summary>
-        public string Title => this.title;
+        public string Title { get; }
 
         /// <summary>
-        /// The size (in bytes) of the paste text.
+        ///     The size (in bytes) of the paste text.
         /// </summary>
-        public long Size => this.size;
+        public long Size { get; }
 
         /// <summary>
-        /// The date the paste is due to expire in UTC, or null if it never expires.
+        ///     The date the paste is due to expire in UTC, or null if it never expires.
         /// </summary>
-        public DateTime? Expires => this.expireTimestamp == 0 ? null as DateTime? : DateTimeOffset.FromUnixTimeSeconds( this.expireTimestamp ).ToUniversalTime().DateTime;
+        public DateTime? Expires =>
+                this._expireTimestamp == 0
+                    ? null as DateTime?
+                    : DateTimeOffset.FromUnixTimeSeconds( this._expireTimestamp ).ToUniversalTime().DateTime;
 
         /// <summary>
-        /// The paste's visibility.
+        ///     The paste's visibility.
         /// </summary>
-        public PasteExposure Exposure => this.exposure;
+        public PasteExposure Exposure { get; }
 
         /// <summary>
-        /// The display name of the paste's language.
+        ///     The display name of the paste's language.
         /// </summary>
-        public string LanguageName => this.formatName;
+        public string LanguageName { get; }
 
         /// <summary>
-        /// The internal ID of the paste's language.
+        ///     The internal ID of the paste's language.
         /// </summary>
-        public string LanguageId => this.formatId;
+        public string LanguageId { get; }
 
         /// <summary>
-        /// The URL to the paste.
+        ///     The URL to the paste.
         /// </summary>
-        public string Url => this.url;
+        public string Url { get; }
 
         /// <summary>
-        /// The number of time the paste has been viewed.
+        ///     The number of time the paste has been viewed.
         /// </summary>
-        public long Views => this.views;
+        public long Views { get; }
 
         /// <summary>
-        /// The contents of the paste.
+        ///     The contents of the paste.
         /// </summary>
-        public string Text => this.text ?? ( this.text = this.agent.Get( String.Format( RawUrl, this.key ), null ) );
-
-        internal Paste( WebAgent agent, XElement paste )
+        public string Text
         {
-            this.agent = agent;
-            this.key = paste.Value( "paste_key" );
-            this.timestamp = paste.Value( "paste_date", Int64.Parse );
-            this.title = paste.Value( "paste_title" );
-            this.size = paste.Value( "paste_size", Int64.Parse );
-            this.expireTimestamp = paste.Value( "paste_expire_date", Int64.Parse );
-            this.exposure = (PasteExposure)paste.Value( "paste_private", Int32.Parse );
-            this.formatName = paste.ValueOrDefault( "paste_format_long" );
-            this.formatId = paste.ValueOrDefault( "paste_format_short" );
-            this.url = paste.Value( "paste_url" );
-            this.views = paste.Value( "paste_hits", Int64.Parse );
+            get
+            {
+                if( !( this._agent.Authenticated && this.Exposure == PasteExposure.Private ) )
+                    this._text = this._agent.Get( String.Format( Paste.RawPublicUrl, this.Id ), null );
+                else
+                {
+                    var parameters = new Dictionary<string, object>
+                    {
+                        ["api_paste_key"] = this.Id
+                    };
+
+                    this._agent.CreateAndExecute( Paste.RawPrivateUrl, "POST", parameters );
+                }
+
+                return this._text;
+            }
+        }
+
+        [SuppressMessage( "ReSharper", "PossibleNullReferenceException" )]
+        internal Paste( HttpWebAgent agent, XContainer paste )
+        {
+            this._agent = agent;
+            this.Id = paste.Element( "paste_key" ).Value;
+            this.Timestamp = Int64.Parse( paste.Element( "paste_date" ).Value );
+            this.Title = paste.Element( "paste_title" ).Value;
+            this.Size = Int64.Parse( paste.Element( "paste_size" ).Value );
+            this._expireTimestamp = Int64.Parse( paste.Element( "paste_expire_date" ).Value );
+            this.Exposure = (PasteExposure)Int32.Parse( paste.Element( "paste_private" ).Value );
+            this.LanguageName = paste.Element( "paste_format_long" )?.Value;
+            this.LanguageId = paste.Element( "paste_format_short" )?.Value;
+            this.Url = paste.Element( "paste_url" ).Value;
+            this.Views = Int64.Parse( paste.Element( "paste_hits" ).Value );
         }
 
         /// <summary>
-        /// Deletes the current paste. Only available if the paste belongs to the currently logged in user.
+        ///     Deletes the current paste. Only available if the paste belongs to the currently logged in user.
         /// </summary>
         /// <exception cref="WebException">Thrown when the underlying HTTP client encounters an error.</exception>
         /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
@@ -113,10 +130,25 @@ namespace Pastebin
         {
             var parameters = new Dictionary<string, object>
             {
-                { "api_paste_key", this.key },
+                { "api_paste_key", this.Id }
             };
 
-            this.agent.Post( DeleteOption, parameters );
+            this._agent.Post( Paste.DeleteOption, parameters );
+        }
+
+        /// <summary>
+        ///     Deletes the current paste. Only available if the paste belongs to the currently logged in user.
+        /// </summary>
+        /// <exception cref="WebException">Thrown when the underlying HTTP client encounters an error.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public async Task DeleteAsync()
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "api_paste_key", this.Id }
+            };
+
+            await this._agent.PostAsync( Paste.DeleteOption, parameters );
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using Pastebin;
 
 [assembly: AssemblyTitle( "Pastebin" )]
 [assembly: AssemblyDescription( "A C# wrapper around the Pastebin API" )]
@@ -10,9 +11,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 [assembly: Guid( "32AA516A-0206-4BFE-97F3-73522408E1E4" )]
-[assembly: AssemblyFileVersion( Pastebin.AssemblyVersion.FileVersion )]
-[assembly: AssemblyVersion( Pastebin.AssemblyVersion.Version )]
-[assembly: AssemblyInformationalVersion( Pastebin.AssemblyVersion.InformationalVersion )]
+[assembly: AssemblyFileVersion( AssemblyVersion.FileVersion )]
+[assembly: AssemblyVersion( AssemblyVersion.Version )]
+[assembly: AssemblyInformationalVersion( AssemblyVersion.InformationalVersion )]
 
 namespace Pastebin
 {
@@ -20,6 +21,6 @@ namespace Pastebin
     {
         public const string Version = "2.0";
         public const string FileVersion = "2.0.0";
-        public const string InformationalVersion = Version + "-pre";
+        public const string InformationalVersion = AssemblyVersion.Version + "-pre";
     }
 }

@@ -1,21 +1,18 @@
-﻿/// <summary>
-/// The root namespace for all Pastebin API components.
-/// </summary>
-namespace Pastebin
+﻿namespace Pastebin
 {
     /// <summary>
-    /// An enumeration defining all possible account types.
+    ///     An enumeration defining all possible account types.
     /// </summary>
     public enum AccountType
     {
         /// <summary>
-        /// Normal (free) user.
+        ///     Normal (free) user.
         /// </summary>
         Normal = 0,
 
         /// <summary>
-        /// Paying (PRO) user.
+        ///     Paying (PRO) user.
         /// </summary>
-        Pro = 1,
+        Pro = 1
     }
 }
