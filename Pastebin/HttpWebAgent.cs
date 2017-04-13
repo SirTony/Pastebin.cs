@@ -141,9 +141,6 @@ namespace Pastebin
 
             query = String.Join( "&", pairs );
 
-            if( method == "GET" )
-                endPoint = $"{endPoint}?{query}";
-
             var request = WebRequest.CreateHttp( endPoint );
             request.Method = method;
             request.UserAgent = HttpWebAgent.UserAgent;
