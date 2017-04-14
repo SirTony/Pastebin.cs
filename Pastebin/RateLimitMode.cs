@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Pastebin
+﻿namespace Pastebin
 {
     /// <summary>
     ///     Specifies how the library will handle request rate limiting.

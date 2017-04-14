@@ -89,7 +89,7 @@ namespace Pastebin
         {
             get
             {
-                if( !( this._agent.Authenticated && this.Exposure == PasteExposure.Private ) )
+                if( !( this._agent.Authenticated && ( this.Exposure == PasteExposure.Private ) ) )
                     this._text = this._agent.Get( String.Format( Paste.RawPublicUrl, this.Id ), null );
                 else
                 {

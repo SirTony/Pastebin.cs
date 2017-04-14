@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace Pastebin
 {
@@ -106,8 +105,7 @@ namespace Pastebin
         /// <param name="title">The title of the paste as it will appear on the page.</param>
         /// <param name="languageId">
         ///     The the language ID of the paste's content. A full list of language IDs can be found at
-        ///     
-        /// https://pastebin.com/api#5
+        ///     https://pastebin.com/api#5
         /// </param>
         /// <param name="code">The contents of the paste.</param>
         /// <param name="exposure">The visibility of the paste (private, public, or unlisted).</param>

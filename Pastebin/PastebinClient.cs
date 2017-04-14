@@ -23,6 +23,11 @@ namespace Pastebin
         public string ApiKey => this._agent.ApiKey;
 
         /// <summary>
+        ///     Gets the current user key for authenticated requests.
+        /// </summary>
+        public string UserKey => this._agent.UserKey;
+
+        /// <summary>
         ///     Returns a collection of the current trending pastes.
         /// </summary>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
@@ -59,6 +64,7 @@ namespace Pastebin
                 if( this._user != null ) return this._user;
 
                 var document = this._agent.PostAndReturnXml( PastebinClient.UserOption );
+
                 // ReSharper disable once PossibleNullReferenceException
                 this._user = new User( this._agent, document.Element( "result" ).Element( "user" ) );
 
@@ -113,6 +119,31 @@ namespace Pastebin
         }
 
         /// <summary>
+        ///     Logs in to Pastebin and returns a <see cref="Pastebin.User" /> instance representing the logged in user.
+        /// </summary>
+        /// <param name="userKey">
+        ///     An existing API user key. These can be generated at https://pastebin.com/api/api_user_key.html if
+        ///     one does not wish to expose their account credentials.
+        /// </param>
+        /// <returns>An object representing the newly authenticated user.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        ///     Thrown when <paramref name="userKey" /> is null.
+        /// </exception>
+        /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public User LogIn( string userKey )
+        {
+            if( String.IsNullOrWhiteSpace( userKey ) )
+                throw new ArgumentNullException( nameof( userKey ) );
+
+            if( this._agent.Authenticated )
+                this._user = null;
+
+            this._agent.UserKey = userKey;
+            return this.User;
+        }
+
+        /// <summary>
         ///     Creates a new anonymous paste. Private pastes are not allowed when pasting anonymously.
         /// </summary>
         /// <param name="title">The title of the paste as it will appear on the page.</param>
@@ -134,15 +165,15 @@ namespace Pastebin
             PasteExposure exposure = PasteExposure.Public,
             PasteExpiration expiration = PasteExpiration.Never
         ) =>
-            PastebinClient.CreatePasteImpl(
-            this._agent,
-            false,
-            title,
-            languageId,
-            code,
-            exposure,
-            expiration
-        );
+                PastebinClient.CreatePasteImpl(
+                    this._agent,
+                    false,
+                    title,
+                    languageId,
+                    code,
+                    exposure,
+                    expiration
+                );
 
         internal static string CreatePasteImpl(
             HttpWebAgent agent,
