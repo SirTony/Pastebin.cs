@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Pastebin
@@ -97,7 +98,36 @@ namespace Pastebin
             string code,
             PasteExposure exposure = PasteExposure.Public,
             PasteExpiration expiration = PasteExpiration.Never )
-            => PastebinClient.CreatePasteImpl( this._agent, true, title, languageId, code, exposure, expiration );
+        {
+            var parameters = PastebinClient.CreatePasteImpl( true, title, languageId, code, exposure, expiration );
+            return this._agent.Post( PastebinClient.PasteOption, parameters );
+        }
+
+        /// <summary>
+        ///     Creates a new paste under the current user asynchronously.
+        /// </summary>
+        /// <param name="title">The title of the paste as it will appear on the page.</param>
+        /// <param name="languageId">
+        ///     The the language ID of the paste's content. A full list of language IDs can be found at
+        ///     https://pastebin.com/api#5
+        /// </param>
+        /// <param name="code">The contents of the paste.</param>
+        /// <param name="exposure">The visibility of the paste (private, public, or unlisted).</param>
+        /// <param name="expiration">The duration of time the paste will be available before expiring.</param>
+        /// <returns>The URL for the newly created paste.</returns>
+        /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="code" /> is null.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public Task<string> CreatePasteAsync(
+            string title,
+            string languageId,
+            string code,
+            PasteExposure exposure = PasteExposure.Public,
+            PasteExpiration expiration = PasteExpiration.Never )
+        {
+            var parameters = PastebinClient.CreatePasteImpl( true, title, languageId, code, exposure, expiration );
+            return this._agent.PostAsync( PastebinClient.PasteOption, parameters );
+        }
 
         /// <summary>
         ///     Creates a new paste under the current user.
@@ -121,6 +151,29 @@ namespace Pastebin
             PasteExposure? exposure = null,
             PasteExpiration expiration = PasteExpiration.Never )
             => this.CreatePaste( title, languageId, code, exposure ?? this.DefaultExposure, expiration );
+
+        /// <summary>
+        ///     Creates a new paste under the current user asynchronously.
+        /// </summary>
+        /// <param name="title">The title of the paste as it will appear on the page.</param>
+        /// <param name="languageId">
+        ///     The the language ID of the paste's content. A full list of language IDs can be found at
+        ///     https://pastebin.com/api#5
+        /// </param>
+        /// <param name="code">The contents of the paste.</param>
+        /// <param name="exposure">The visibility of the paste (private, public, or unlisted).</param>
+        /// <param name="expiration">The duration of time the paste will be available before expiring.</param>
+        /// <returns>The URL for the newly created paste.</returns>
+        /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="code" /> is null.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public Task<string> CreatePasteAsync(
+            string title,
+            string languageId,
+            string code,
+            PasteExposure? exposure = null,
+            PasteExpiration expiration = PasteExpiration.Never )
+            => this.CreatePasteAsync( title, languageId, code, exposure ?? this.DefaultExposure, expiration );
 
         /// <summary>
         ///     Lists all the pastes for the current user.
@@ -149,6 +202,37 @@ namespace Pastebin
                              .PostAndReturnXml( User.ListOption, parameters )
                              .Element( "result" )
                              .Elements( "paste" );
+
+            return pastes.Select( x => new Paste( this._agent, x ) )
+                         .ToList()
+                         .AsReadOnly();
+        }
+
+        /// <summary>
+        ///     Lists all the pastes for the current user asynchronously.
+        /// </summary>
+        /// <param name="limit">Optional paste limit. Minimum value = 1. Maximum value = 1000.</param>
+        /// <returns>A read-only collection containing the user's pastes.</returns>
+        /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public async Task<ReadOnlyCollection<Paste>> GetPastesAsync( int limit = 50 )
+        {
+            if( ( limit < 1 ) || ( limit > 1000 ) )
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof( limit ),
+                    "Limit must be between 1 and 1000 (inclusive)"
+                );
+            }
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "api_results_limit", limit }
+            };
+
+            var xml = await this._agent.PostAndReturnXmlAsync( User.ListOption, parameters );
+            // ReSharper disable once PossibleNullReferenceException
+            var pastes = xml.Element( "result" ).Elements( "paste" );
 
             return pastes.Select( x => new Paste( this._agent, x ) )
                          .ToList()

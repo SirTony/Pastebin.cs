@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Pastebin
 {
@@ -12,10 +13,9 @@ namespace Pastebin
     {
         private const string UserOption = "userdetails";
         private const string TrendingOption = "trends";
-        private const string PasteOption = "paste";
+        internal const string PasteOption = "paste";
 
         private readonly HttpWebAgent _agent;
-        private User _user;
 
         /// <summary>
         ///     Gets the current API key to use in requests.
@@ -54,23 +54,7 @@ namespace Pastebin
         /// <exception cref="PastebinException">Thrown when the user is not logged in.</exception>
         /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
         /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
-        public User User
-        {
-            get
-            {
-                if( !this._agent.Authenticated )
-                    throw new PastebinException( "User not logged in." );
-
-                if( this._user != null ) return this._user;
-
-                var document = this._agent.PostAndReturnXml( PastebinClient.UserOption );
-
-                // ReSharper disable once PossibleNullReferenceException
-                this._user = new User( this._agent, document.Element( "result" ).Element( "user" ) );
-
-                return this._user;
-            }
-        }
+        public User User { get; private set; }
 
         /// <summary>
         ///     Initializes a new instance of <see cref="PastebinClient" /> with the specified API key.
@@ -89,6 +73,45 @@ namespace Pastebin
                 throw new ArgumentNullException( nameof( apiKey ) );
 
             this._agent = new HttpWebAgent( apiKey, rateLimitMode );
+        }
+
+        private User GetUser()
+        {
+            if( !this._agent.Authenticated )
+                throw new PastebinException( "User not logged in." );
+
+            var document = this._agent.PostAndReturnXml( PastebinClient.UserOption );
+
+            // ReSharper disable once PossibleNullReferenceException
+            return this.User = new User( this._agent, document.Element( "result" ).Element( "user" ) );
+        }
+
+        private async Task<User> GetUserAsync()
+        {
+            if( !this._agent.Authenticated )
+                throw new PastebinException( "User not logged in." );
+
+            var document = await this._agent.PostAndReturnXmlAsync( PastebinClient.UserOption );
+
+            // ReSharper disable once PossibleNullReferenceException
+            return this.User = new User( this._agent, document.Element( "result" ).Element( "user" ) );
+        }
+
+        /// <summary>
+        ///     Returns a collection of the current trending pastes asynchronously.
+        /// </summary>
+        /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public async Task<ReadOnlyCollection<Paste>> GetTrendingPastesAsync()
+        {
+            var xml = await this._agent.PostAndReturnXmlAsync( PastebinClient.TrendingOption );
+
+            // ReSharper disable once PossibleNullReferenceException
+            var pastes = xml.Element( "result" ).Elements( "paste" );
+
+            return pastes.Select( element => new Paste( this._agent, element ) )
+                         .ToList()
+                         .AsReadOnly();
         }
 
         /// <summary>
@@ -111,11 +134,11 @@ namespace Pastebin
             if( password == null )
                 throw new ArgumentNullException( nameof( password ) );
 
-            if( this._agent.Authenticated )
-                this._user = null;
+            if( ( this.User != null ) && String.Equals( this.User.Username, username ) )
+                return this.User;
 
             this._agent.Authenticate( username, password );
-            return this.User;
+            return this.GetUser();
         }
 
         /// <summary>
@@ -136,11 +159,65 @@ namespace Pastebin
             if( String.IsNullOrWhiteSpace( userKey ) )
                 throw new ArgumentNullException( nameof( userKey ) );
 
-            if( this._agent.Authenticated )
-                this._user = null;
+            if( ( this.UserKey == userKey ) && ( this.User != null ) )
+                return this.User;
 
             this._agent.UserKey = userKey;
-            return this.User;
+            return this.GetUser();
+        }
+
+        /// <summary>
+        ///     Logs in to Pastebin and returns a <see cref="Pastebin.User" /> instance representing the logged in user
+        ///     asynchronously.
+        /// </summary>
+        /// <param name="username">Ther username of the account to authenticate as.</param>
+        /// <param name="password">The password for the account to authenticate as.</param>
+        /// <returns>An object representing the newly authenticated user.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        ///     Thrown when <paramref name="username" /> or <paramref name="password" />
+        ///     is null.
+        /// </exception>
+        /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public Task<User> LogInAsync( string username, string password )
+        {
+            if( username == null )
+                throw new ArgumentNullException( nameof( username ) );
+
+            if( password == null )
+                throw new ArgumentNullException( nameof( password ) );
+
+            if( ( this.User != null ) && String.Equals( this.User.Username, username ) )
+                return Task.FromResult( this.User );
+
+            this._agent.Authenticate( username, password );
+            return this.GetUserAsync();
+        }
+
+        /// <summary>
+        ///     Logs in to Pastebin and returns a <see cref="Pastebin.User" /> instance representing the logged in user
+        ///     asynchronously.
+        /// </summary>
+        /// <param name="userKey">
+        ///     An existing API user key. These can be generated at https://pastebin.com/api/api_user_key.html if
+        ///     one does not wish to expose their account credentials.
+        /// </param>
+        /// <returns>An object representing the newly authenticated user.</returns>
+        /// <exception cref="System.ArgumentNullException">
+        ///     Thrown when <paramref name="userKey" /> is null.
+        /// </exception>
+        /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public Task<User> LogInAsync( string userKey )
+        {
+            if( String.IsNullOrWhiteSpace( userKey ) )
+                throw new ArgumentNullException( nameof( userKey ) );
+
+            if( ( this.UserKey == userKey ) && ( this.User != null ) )
+                return Task.FromResult( this.User );
+
+            this._agent.UserKey = userKey;
+            return this.GetUserAsync();
         }
 
         /// <summary>
@@ -164,19 +241,56 @@ namespace Pastebin
             string code,
             PasteExposure exposure = PasteExposure.Public,
             PasteExpiration expiration = PasteExpiration.Never
-        ) =>
-                PastebinClient.CreatePasteImpl(
-                    this._agent,
-                    false,
-                    title,
-                    languageId,
-                    code,
-                    exposure,
-                    expiration
-                );
+        )
+        {
+            var parameters = PastebinClient.CreatePasteImpl(
+                false,
+                title,
+                languageId,
+                code,
+                exposure,
+                expiration
+            );
 
-        internal static string CreatePasteImpl(
-            HttpWebAgent agent,
+            return this._agent.Post( PastebinClient.PasteOption, parameters );
+        }
+
+        /// <summary>
+        ///     Creates a new anonymous paste asynchronously. Private pastes are not allowed when pasting anonymously.
+        /// </summary>
+        /// <param name="title">The title of the paste as it will appear on the page.</param>
+        /// <param name="languageId">
+        ///     The the language ID of the paste's content. A full list of language IDs can be found at
+        ///     https://pastebin.com/api#5
+        /// </param>
+        /// <param name="code">The contents of the paste.</param>
+        /// <param name="exposure">The visibility of the paste (private, public, or unlisted).</param>
+        /// <param name="expiration">The duration of time the paste will be available before expiring.</param>
+        /// <returns>The URL for the newly created paste.</returns>
+        /// <exception cref="System.Net.WebException">Thrown when the underlying HTTP client encounters an error.</exception>
+        /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="code" /> is null.</exception>
+        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
+        public Task<string> CreatePasteAsync(
+            string title,
+            string languageId,
+            string code,
+            PasteExposure exposure = PasteExposure.Public,
+            PasteExpiration expiration = PasteExpiration.Never
+        )
+        {
+            var parameters = PastebinClient.CreatePasteImpl(
+                false,
+                title,
+                languageId,
+                code,
+                exposure,
+                expiration
+            );
+
+            return this._agent.PostAsync( PastebinClient.PasteOption, parameters );
+        }
+
+        internal static Dictionary<string, object> CreatePasteImpl(
             bool authenticated,
             string title,
             string languageId,
@@ -227,7 +341,7 @@ namespace Pastebin
                 default: throw new NotSupportedException();
             }
 
-            var parameters = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 { "api_paste_code", code },
                 { "api_paste_name", title },
@@ -235,8 +349,6 @@ namespace Pastebin
                 { "api_paste_private", (int)exposure },
                 { "api_paste_expire_date", expirationString }
             };
-
-            return agent.Post( PastebinClient.PasteOption, parameters );
         }
     }
 }

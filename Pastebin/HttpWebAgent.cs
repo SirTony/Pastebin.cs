@@ -221,8 +221,8 @@ namespace Pastebin
             var error = text.Substring( text.IndexOf( ',' ) + 2 );
             switch( error )
             {
-                case "invalid api_user_key": throw new PastebinException( "User not logged in" );
-                case "invalid api_dev_key": throw new PastebinException( "Invalid API key" );
+                case "invalid api_user_key": throw new PastebinException( "Invalid user key. Consider logging in again or refreshing your user key" );
+                case "invalid api_dev_key": throw new PastebinException( "Invalid API dev key" );
 
                 default: throw new PastebinException( error );
             }
