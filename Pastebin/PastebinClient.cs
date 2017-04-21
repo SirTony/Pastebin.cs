@@ -134,7 +134,7 @@ namespace Pastebin
             if( password == null )
                 throw new ArgumentNullException( nameof( password ) );
 
-            if( ( this.User != null ) && String.Equals( this.User.Username, username ) )
+            if( ( this.User != null ) && String.Equals( this.User.Username, username, StringComparison.OrdinalIgnoreCase ) )
                 return this.User;
 
             this._agent.Authenticate( username, password );

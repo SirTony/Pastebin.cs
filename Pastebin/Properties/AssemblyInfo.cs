@@ -20,7 +20,7 @@ namespace Pastebin
     internal static class AssemblyVersion
     {
         public const string Version = "2.0";
-        public const string FileVersion = "2.0.0";
-        public const string InformationalVersion = AssemblyVersion.Version + "-pre";
+        public const string FileVersion = "2.0";
+        public const string InformationalVersion = AssemblyVersion.Version;
     }
 }
