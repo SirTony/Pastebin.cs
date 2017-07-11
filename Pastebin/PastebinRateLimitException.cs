@@ -15,9 +15,6 @@ namespace Pastebin
         internal PastebinRateLimitException( TimeSpan timeLeft )
             : base(
                 "Maximum number of requests has been exceeded  this period. " +
-                $"Please wait {(int)timeLeft.TotalSeconds} seconds" )
-        {
-            this.WaitTimeLeft = timeLeft;
-        }
+                $"Please wait {(int)timeLeft.TotalSeconds} seconds" ) => this.WaitTimeLeft = timeLeft;
     }
 }

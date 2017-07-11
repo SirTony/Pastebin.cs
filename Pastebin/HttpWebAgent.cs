@@ -4,9 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using System.Xml.Linq;
 
 namespace Pastebin
@@ -16,11 +14,11 @@ namespace Pastebin
         private const string ApiUrl = "https://pastebin.com/api/api_post.php";
         private const string LoginUrl = "https://pastebin.com/api/api_login.php";
 
-        private const string UserAgent = "Pastebin.cs v" + AssemblyVersion.InformationalVersion;
-
         private const double BurstDuration = 60; // seconds
         private const uint MaxRequestsPerBurst = 30;
         private const double PaceRequestTimeout = 2000;
+
+        private const string UserAgent = "Pastebin.cs v2";
         private readonly RateLimitMode _rateLimitMode;
 
         public readonly string ApiKey;
@@ -38,17 +36,6 @@ namespace Pastebin
             this._rateLimitMode = mode;
         }
 
-        public void Authenticate( string username, string password )
-        {
-            var parameters = new Dictionary<string, object>
-            {
-                { "api_user_name", username },
-                { "api_user_password", password }
-            };
-
-            this.UserKey = this.CreateAndExecute( HttpWebAgent.LoginUrl, "POST", parameters );
-        }
-
         public async Task AuthenticateAsync( string username, string password )
         {
             var parameters = new Dictionary<string, object>
@@ -57,60 +44,30 @@ namespace Pastebin
                 { "api_user_password", password }
             };
 
-            this.UserKey = await this.CreateAndExecuteAsync( HttpWebAgent.LoginUrl, "POST", parameters );
+            this.UserKey = await this.CreateAndExecuteAsync( HttpWebAgent.LoginUrl, "POST", parameters )
+                                     .ConfigureAwait( false );
         }
 
-        public Task<string> GetAsync( string url, Dictionary<string, object> parameters )
-            => this.CreateAndExecuteAsync( url, "GET", parameters );
+        public async Task<string> GetAsync( string url, Dictionary<string, object> parameters )
+            => await this.CreateAndExecuteAsync( url, "GET", parameters ).ConfigureAwait( false );
 
-        public Task<string> PostAsync( Dictionary<string, object> parameters )
-            => this.CreateAndExecuteAsync( HttpWebAgent.ApiUrl, "POST", parameters );
+        public async Task<string> PostAsync( Dictionary<string, object> parameters )
+            => await this.CreateAndExecuteAsync( HttpWebAgent.ApiUrl, "POST", parameters ).ConfigureAwait( false );
 
-        public Task<string> PostAsync( string option, Dictionary<string, object> parameters )
+        public async Task<string> PostAsync( string option, Dictionary<string, object> parameters )
         {
             parameters = parameters ?? new Dictionary<string, object>();
             parameters.Add( "api_option", option );
 
-            return this.PostAsync( parameters );
-        }
-
-        public string Get( string url, Dictionary<string, object> parameters )
-            => this.CreateAndExecute( url, "GET", parameters );
-
-        public string Post( Dictionary<string, object> parameters )
-            => this.CreateAndExecute( HttpWebAgent.ApiUrl, "POST", parameters );
-
-        public string Post( string option, Dictionary<string, object> parameters )
-        {
-            parameters = parameters ?? new Dictionary<string, object>();
-            parameters.Add( "api_option", option );
-
-            return this.Post( parameters );
-        }
-
-        public XDocument PostAndReturnXml( string option, Dictionary<string, object> parameters = null )
-        {
-            var xml = this.Post( option, parameters );
-            return XDocument.Parse( $"<?xml version='1.0' encoding='utf-8'?><result>{xml}</result>" );
+            return await this.PostAsync( parameters ).ConfigureAwait( false );
         }
 
         public async Task<XDocument> PostAndReturnXmlAsync(
             string option,
             Dictionary<string, object> parameters = null )
         {
-            var xml = await this.PostAsync( option, parameters );
+            var xml = await this.PostAsync( option, parameters ).ConfigureAwait( false );
             return XDocument.Parse( $"<?xml version='1.0' encoding='utf-8'?><result>{xml}</result>" );
-        }
-
-        public WebRequest CreateRequest( string endPoint, string method, Dictionary<string, object> parameters )
-        {
-            this.EnforceRateLimit();
-            var request = this.CreateRequestImpl( endPoint, method, parameters, out var query );
-
-            if( method != "POST" ) return request;
-
-            HttpWebAgent.WritePostData( request, query );
-            return request;
         }
 
         public async Task<WebRequest> CreateRequestAsync(
@@ -118,12 +75,12 @@ namespace Pastebin
             string method,
             Dictionary<string, object> parameters )
         {
-            await this.EnforceRateLimitAsync();
+            await this.EnforceRateLimitAsync().ConfigureAwait( false );
             var request = this.CreateRequestImpl( endPoint, method, parameters, out var query );
 
             if( method != "POST" ) return request;
 
-            await HttpWebAgent.WritePostDataAsync( request, query );
+            await HttpWebAgent.WritePostDataAsync( request, query ).ConfigureAwait( false );
             return request;
         }
 
@@ -142,8 +99,8 @@ namespace Pastebin
             var pairs = new List<string>( parameters.Count );
             pairs.AddRange(
                 from pair in parameters
-                let key = HttpUtility.UrlEncode( pair.Key )
-                let value = HttpUtility.UrlEncode( pair.Value.ToString() )
+                let key = WebUtility.UrlEncode( pair.Key )
+                let value = WebUtility.UrlEncode( pair.Value.ToString() )
                 select $"{key}={value}"
             );
 
@@ -151,63 +108,34 @@ namespace Pastebin
 
             var request = WebRequest.CreateHttp( endPoint );
             request.Method = method;
-            request.UserAgent = HttpWebAgent.UserAgent;
+            request.Headers[HttpRequestHeader.UserAgent] = HttpWebAgent.UserAgent;
 
             return request;
-        }
-
-        private static void WritePostData( WebRequest request, string query )
-        {
-            var data = Encoding.UTF8.GetBytes( query );
-            request.ContentLength = data.Length;
-            request.ContentType = "application/x-www-form-urlencoded";
-
-            using( var stream = request.GetRequestStream() )
-            {
-                stream.Write( data, 0, data.Length );
-                stream.Flush();
-            }
         }
 
         private static async Task WritePostDataAsync( WebRequest request, string query )
         {
             var data = Encoding.UTF8.GetBytes( query );
-            request.ContentLength = data.Length;
+            request.Headers[HttpRequestHeader.ContentLength] = data.Length.ToString();
             request.ContentType = "application/x-www-form-urlencoded";
 
-            using( var stream = await request.GetRequestStreamAsync() )
+            using( var stream = await request.GetRequestStreamAsync().ConfigureAwait( false ) )
             {
-                await stream.WriteAsync( data, 0, data.Length );
-                await stream.FlushAsync();
+                await stream.WriteAsync( data, 0, data.Length ).ConfigureAwait( false );
+                await stream.FlushAsync().ConfigureAwait( false );
             }
-        }
-
-        public static string ExecuteRequest( WebRequest request )
-        {
-            var response = request.GetResponse();
-            string text;
-
-            // ReSharper disable once AssignNullToNotNullAttribute
-            using( var stream = response.GetResponseStream() )
-            using( var reader = new StreamReader( stream, Encoding.UTF8 ) )
-            {
-                text = reader.ReadToEnd();
-            }
-
-            HttpWebAgent.HandleResponseString( text );
-            return text;
         }
 
         public static async Task<string> ExecuteRequestAsync( WebRequest request )
         {
-            var response = await request.GetResponseAsync();
+            var response = await request.GetResponseAsync().ConfigureAwait( false );
             string text;
 
             // ReSharper disable once AssignNullToNotNullAttribute
             using( var stream = response.GetResponseStream() )
             using( var reader = new StreamReader( stream, Encoding.UTF8 ) )
             {
-                text = await reader.ReadToEndAsync();
+                text = await reader.ReadToEndAsync().ConfigureAwait( false );
             }
 
             HttpWebAgent.HandleResponseString( text );
@@ -221,17 +149,13 @@ namespace Pastebin
             var error = text.Substring( text.IndexOf( ',' ) + 2 );
             switch( error )
             {
-                case "invalid api_user_key": throw new PastebinException( "Invalid user key. Consider logging in again or refreshing your user key" );
+                case "invalid api_user_key":
+                    throw new PastebinException(
+                        "Invalid user key. Consider logging in again or refreshing your user key" );
                 case "invalid api_dev_key": throw new PastebinException( "Invalid API dev key" );
 
                 default: throw new PastebinException( error );
             }
-        }
-
-        public string CreateAndExecute( string url, string method, Dictionary<string, object> parameters )
-        {
-            var request = this.CreateRequest( url, method, parameters );
-            return HttpWebAgent.ExecuteRequest( request );
         }
 
         public async Task<string> CreateAndExecuteAsync(
@@ -239,14 +163,8 @@ namespace Pastebin
             string method,
             Dictionary<string, object> parameters )
         {
-            var request = await this.CreateRequestAsync( url, method, parameters );
-            return await HttpWebAgent.ExecuteRequestAsync( request );
-        }
-
-        private void EnforceRateLimit()
-        {
-            if( this.CheckRequestRate( out var duration ) )
-                Thread.Sleep( duration );
+            var request = await this.CreateRequestAsync( url, method, parameters ).ConfigureAwait( false );
+            return await HttpWebAgent.ExecuteRequestAsync( request ).ConfigureAwait( false );
         }
 
         private Task EnforceRateLimitAsync()

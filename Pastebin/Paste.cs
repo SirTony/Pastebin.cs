@@ -55,7 +55,9 @@ namespace Pastebin
         public DateTime? Expires =>
                 this._expireTimestamp == 0
                     ? null as DateTime?
-                    : DateTimeOffset.FromUnixTimeSeconds( this._expireTimestamp ).ToUniversalTime().DateTime;
+                    : DateTimeOffset.FromUnixTimeSeconds( this._expireTimestamp )
+                                    .ToUniversalTime()
+                                    .DateTime;
 
         /// <summary>
         ///     The paste's visibility.
@@ -82,29 +84,6 @@ namespace Pastebin
         /// </summary>
         public long Views { get; }
 
-        /// <summary>
-        ///     The contents of the paste.
-        /// </summary>
-        public string Text
-        {
-            get
-            {
-                if( !( this._agent.Authenticated && ( this.Exposure == PasteExposure.Private ) ) )
-                    this._text = this._agent.Get( String.Format( Paste.RawPublicUrl, this.Id ), null );
-                else
-                {
-                    var parameters = new Dictionary<string, object>
-                    {
-                        ["api_paste_key"] = this.Id
-                    };
-
-                    this._agent.CreateAndExecute( Paste.RawPrivateUrl, "POST", parameters );
-                }
-
-                return this._text;
-            }
-        }
-
         [SuppressMessage( "ReSharper", "PossibleNullReferenceException" )]
         internal Paste( HttpWebAgent agent, XContainer paste )
         {
@@ -122,18 +101,33 @@ namespace Pastebin
         }
 
         /// <summary>
-        ///     Deletes the current paste. Only available if the paste belongs to the currently logged in user.
+        ///     Retreive the raw text data of the paste.
         /// </summary>
-        /// <exception cref="WebException">Thrown when the underlying HTTP client encounters an error.</exception>
-        /// <exception cref="PastebinException">Thrown when a bad API request is made.</exception>
-        public void Delete()
+        public async Task<string> GetTextAsync()
         {
-            var parameters = new Dictionary<string, object>
+            if( !( this._agent.Authenticated && ( this.Exposure == PasteExposure.Private ) ) )
             {
-                { "api_paste_key", this.Id }
-            };
+                var parameters = new Dictionary<string, object>
+                {
+                    ["api_paste_key"] = this.Id,
+                    ["api_option"] = Paste.RawOption
+                };
 
-            this._agent.Post( Paste.DeleteOption, parameters );
+                this._text = await this._agent.GetAsync( String.Format( Paste.RawPublicUrl, this.Id ), parameters )
+                                       .ConfigureAwait( false );
+            }
+            else
+            {
+                var parameters = new Dictionary<string, object>
+                {
+                    ["api_paste_key"] = this.Id
+                };
+
+                this._text = await this._agent.CreateAndExecuteAsync( Paste.RawPrivateUrl, "POST", parameters )
+                                       .ConfigureAwait( false );
+            }
+
+            return this._text;
         }
 
         /// <summary>
@@ -145,10 +139,10 @@ namespace Pastebin
         {
             var parameters = new Dictionary<string, object>
             {
-                { "api_paste_key", this.Id }
+                ["api_paste_key"] = this.Id
             };
 
-            await this._agent.PostAsync( Paste.DeleteOption, parameters );
+            await this._agent.PostAsync( Paste.DeleteOption, parameters ).ConfigureAwait( false );
         }
     }
 }

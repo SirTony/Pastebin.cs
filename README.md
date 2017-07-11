@@ -10,11 +10,9 @@ To install Pastebin.cs, run the following command in the [Package Manager Consol
 
     PM> Install-Package Pastebin-Api
 
-You can also head over the [releases](https://github.com/SirTony/Pastebin.cs/releases) page to grab any one of the version tags and pre-compiled binaries.
-
 ##### Building From Source
 
-If you would like to build the library yourself simply checkout the repository with the following command (or [grab a source tarball](https://github.com/SirTony/Pastebin.cs/archive/master.zip)):
+If you would like to build the library yourself simply checkout the repository with the following command (or [grab a source archive](https://github.com/SirTony/Pastebin.cs/archive/master.zip)):
 
     $ git clone https://github.com/SirTony/Pastebin.cs.git ./Pastebin
 
@@ -22,8 +20,6 @@ Then run MSBuild on `Pastebin.sln`, or simply open the solution in Visual Studio
 
 Documentation
 -------------
-
-An MSDN-style library reference can be found at http://sirtony.github.io/Pastebin.cs
 
 Source code samples can be found at https://github.com/SirTony/Pastebin.cs/tree/master/Samples
 
@@ -35,7 +31,7 @@ License
 ```
 The MIT License (MIT)
 
-Copyright (c) 2015 Tony Montana
+Copyright © 2015+ Tony Montana
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
